@@ -38,7 +38,7 @@ This library is used to understand how specific actions or choices can evolve as
 ```
     
 ## Function parameters
-Following are the parameters which are required to be specified. At the end in the parenthesis, it shows the data type of the parameter which is required or the possible values which is required to be used.
+Following are the parameters which are required to be specified. At the end in the parenthesis, it shows the data type of the parameter which is required or the possible values which is required to be used. In following we will use agents' strategies, actions, choices, responses, names proposed interchangeably. These all represent same intent and meaning in our context.
 
 1. iteration_name: Iteration name. (String)
 2. path_to_save_output: Path to save output files. (String)
@@ -53,28 +53,28 @@ Following are the parameters which are required to be specified. At the end in t
 11. fixed_agents: Agents assumed as fixed. e.g. [2,3] shows we want agents 2 and 3 to be fixed. (List)
 12. prob_new_name: Probability of agent suggesting new name at any time during the game. (Float)
 13. network_name: Specify one of these values. A detailed explanation is provided below. ["small_world1","small_world2","small_world3","complete","random","grid2d"]. (String)
-14. random_seed: Random seed value. (Integer)
+14. random_seed: Random seed value to reproduce results. (Integer)
 15. function_to_use: Specify one of these values. A detailed explanation is provided below. ["perturbed_response1","perturbed_response2","perturbed_response3","perturbed_response4"]. (String)
-16. norm_agents_frequency: Norm condition. Minimum percentage of agents require to propose same name. Specify number from 0 (0% agents) to 1(100% agents). (Float)
+16. norm_agents_frequency: Norm condition. Minimum percentage of agents require to propose same name at any given time. Specify number from 0 (0% agents) to 1(100% agents). (Float)
 17. norm_time_frequency: Norm condition. Minimum percentage of times agents require to propose same name. Specify number from 0 (no time period) to 1 (all time periods). (Float)
 
 <br />
 
 In the "function_to_use" parameter above, below is the explanation for what these different values mean inside the list specified above.
 
-1. perturbed_response1: Agents select the best response (1-perturb_ratio)*100% times among the strategies which are most frequently used. If there is more than one such strategy, then agents select any one strategy randomly. Agents select random strategy (perturb_ratio)*100% times among the strategies which are not most frequently used. Here also, if there is more than one such strategy, then agents select any one strategy randomly out of these.
+1. perturbed_response1: Agents select the best response (1-"perturb_ratio")*100% times among the strategies which are most frequently used. If there is more than one such strategy, then agents select any one strategy randomly. Agents select random strategy ("perturb_ratio")*100% times among the strategies which are not most frequently used. Here also, if there is more than one such strategy, then agents select any one strategy randomly out of these.
 2. perturbed_response2: Agent selects strategy randomly according to the relative weightage of different strategies. These relative weights are the % of times the respective strategy has been used by opponents in the past. 
-3. perturbed_response3: This is same as "perturbed_response1" function except agent selects random strategy (perturb_ratio)*100% times from all the possible strategies and not only from the ones which were not used most frequently by their opponents.
-4. perturbed_response4: Agent selects the best response 100% of times among the strategies which are most frequently used. If there is more than one such strategy, then agents select any one strategy randomly. There is no perturbation element (perturb_ratio is considered as zero).
+3. perturbed_response3: This is same as "perturbed_response1" function except agent selects random strategy ("perturb_ratio")*100% times from all the possible strategies and not only from the ones which were not used most frequently by their opponents.
+4. perturbed_response4: Agent selects the best response 100% of times among the strategies which are most frequently used. If there is more than one such strategy, then agents select any one strategy randomly. There is no perturbation element ("perturb_ratio" is considered as zero).
 
-In all the four different response functions, agents propose new name at any point during the game with probability of prob_new_name.
+In all the four different response functions, agents propose new name at any point during the game with probability of "prob_new_name".
 
 
 <br/>
 
 In the "network_name" parameter above, below is the explanation for what these different values mean inside the list specified above.
-1. small_world1: Returns a Watts Strogatz small-world graph. Here number of edges remained constant once we increase the prob_edge_rewire value. Shortcut edges if added would replace the existing ones. But total count of edges remained constant.
-2. small_world2: Returns a Newman Watts Strogatz small-world graph. Here number of edges increased once we increase the prob_edge_rewire value. It would add more shortcut edges in addition to what already exist.
+1. small_world1: Returns a Watts Strogatz small-world graph. Here number of edges remained constant once we increase the "prob_edge_rewire" value. Shortcut edges if added would replace the existing ones. But total count of edges remained constant.
+2. small_world2: Returns a Newman Watts Strogatz small-world graph. Here number of edges increased once we increase the "prob_edge_rewire" value. It would add more shortcut edges in addition to what already exist.
 3. small_world3: Returns a connected Watts Strogatz small-world graph. Rest of the explanation remains as small_world1.
 4. complete: Returns the complete graph.
 5. random: Compute a random graph by swapping edges of a given graph. The given graph used is Watts Strogatz small-world graph (the one produced by "small_world1").
@@ -102,7 +102,7 @@ To begin with, agents do not have history to look back into, hence agents propos
 
 We assume name to be any string of length "name_len", a combination of alpha and numeric characters generated randomly. Agents keep track of names proposed by other agents and accordingly update their actions in the successive rounds of play. We assume agents have bounded rationality and engaged in limited calculations to decide upon what action to take.
 
-We have considered different combinations of strategies that agents can adopt while taking actions. We assume that agents use perturbed best response implying agents can take action randomly with a certain probability (Young, 2015). At each time when agents require to take action, they consider the names proposed in the past by their opponents and decide what name to propose in the current period. We have tested four different ways which agents can use to decide what action to take. The "function_to_use" parameter provides details about these and how these are different to each other.
+We have considered different combinations of approaches or methods that agents can adopt while taking actions. We assume that agents use perturbed best response implying agents can take action randomly with a certain probability (Young, 2015). At each time when agents require to take action, they consider the names proposed in the past by their opponents and decide what name to propose in the current period. We have tested four different ways which agents can use to decide what action to take. The "function_to_use" parameter provides details about these and how these are different to each other.
 
 When the simulations are run for "num_of_trials" timeperiod, we get the percentage distribution of different names (strategies) which agents proposed. The names which satisfy the two conditions for norm specified by "norms_agents_frequency" and "norms_time_frequency" are considered as norm. We have looked at two dimensions of norms, number of agents following the norm and for how long it has been followed. We can see the output like below. In below graph, X-axis shows the timeperiod, and Y-axis shows the % of agents who proposed the respective name. Y-axis values are in ratio format (range from 0 - 1), so would need to multiply by 100 to get this in percentage format.
 
