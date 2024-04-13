@@ -7,8 +7,6 @@ import datetime
 import random
 import string
 
-
-
 # 1.iteration_name: iteration name. String
 # 2.path_to_save_output: path to save output files. String 
 # 3.num_neighbors: number of neighbours. Integer
@@ -48,17 +46,15 @@ import string
 # grid2d: Return the 2d grid graph of mxn nodes, each connected to its nearest neighbors.
 
 
-
-
 def perturbed_response1(AGENT_NO,data_to_look,perturb_ratio,name_len,prob_new_name):
 
     try:
         count_pd = data_to_look.loc[data_to_look["agent"]==AGENT_NO]["name_offered_by_opponent"].value_counts().reset_index()
-        count_pd["tot_sum"] = count_pd["name_offered_by_opponent"] / sum(count_pd["name_offered_by_opponent"])
-        best_response = count_pd.loc[count_pd["tot_sum"] == max(count_pd["tot_sum"])]['index'].tolist()
+        count_pd["tot_sum"] = count_pd["count"] / sum(count_pd["count"])
+        best_response = count_pd.loc[count_pd["tot_sum"] == max(count_pd["tot_sum"])]['name_offered_by_opponent'].tolist()
         draw1= random.choices(population=best_response,k=1)
 
-        Nonbest_response = count_pd.loc[count_pd["tot_sum"] != max(count_pd["tot_sum"])]['index'].tolist()
+        Nonbest_response = count_pd.loc[count_pd["tot_sum"] != max(count_pd["tot_sum"])]['name_offered_by_opponent'].tolist()
         if len(Nonbest_response) > 0:
             draw2= random.choices(population=Nonbest_response,k=1)
             best_response = random.choices(population=[draw1[0],draw2[0]],weights=[1-perturb_ratio,perturb_ratio],k=1)
@@ -81,12 +77,11 @@ def perturbed_response1(AGENT_NO,data_to_look,perturb_ratio,name_len,prob_new_na
 
 
 
-
 def perturbed_response2(AGENT_NO,data_to_look,name_len,prob_new_name):
     try:
         count_pd = data_to_look.loc[data_to_look["agent"]==AGENT_NO]["name_offered_by_opponent"].value_counts().reset_index()
-        count_pd["tot_sum"] = count_pd["name_offered_by_opponent"] / sum(count_pd["name_offered_by_opponent"])
-        names_list = count_pd['index'].tolist()
+        count_pd["tot_sum"] = count_pd["count"] / sum(count_pd["count"])
+        names_list = count_pd['name_offered_by_opponent'].tolist()
         share_list = count_pd['tot_sum'].tolist()
         draw1= random.choices(population=names_list,weights=share_list,k=1)
         best_response = draw1[0]
@@ -106,15 +101,14 @@ def perturbed_response2(AGENT_NO,data_to_look,name_len,prob_new_name):
 
 
 
-
 def perturbed_response3(AGENT_NO,data_to_look,perturb_ratio,name_len,prob_new_name):
     try:
         count_pd = data_to_look.loc[data_to_look["agent"]==AGENT_NO]["name_offered_by_opponent"].value_counts().reset_index()
-        count_pd["tot_sum"] = count_pd["name_offered_by_opponent"] / sum(count_pd["name_offered_by_opponent"])
-        best_response = count_pd.loc[count_pd["tot_sum"] == max(count_pd["tot_sum"])]['index'].tolist()
+        count_pd["tot_sum"] = count_pd["count"] / sum(count_pd["count"])
+        best_response = count_pd.loc[count_pd["tot_sum"] == max(count_pd["tot_sum"])]['name_offered_by_opponent'].tolist()
         draw1= random.choices(population=best_response,k=1)
 
-        Nonbest_response = count_pd['index'].tolist()
+        Nonbest_response = count_pd['name_offered_by_opponent'].tolist()
         draw2= random.choices(population=Nonbest_response,k=1)
         best_response = random.choices(population=[draw1[0],draw2[0]],weights=[1-perturb_ratio,perturb_ratio],k=1)
         best_response = best_response[0]
@@ -132,12 +126,11 @@ def perturbed_response3(AGENT_NO,data_to_look,perturb_ratio,name_len,prob_new_na
 
 
 
-
 def perturbed_response4(AGENT_NO,data_to_look,name_len,prob_new_name):
     try:
         count_pd = data_to_look.loc[data_to_look["agent"]==AGENT_NO]["name_offered_by_opponent"].value_counts().reset_index()
-        count_pd["tot_sum"] = count_pd["name_offered_by_opponent"] / sum(count_pd["name_offered_by_opponent"])
-        best_response = count_pd.loc[count_pd["tot_sum"] == max(count_pd["tot_sum"])]['index'].tolist()
+        count_pd["tot_sum"] = count_pd["count"] / sum(count_pd["count"])
+        best_response = count_pd.loc[count_pd["tot_sum"] == max(count_pd["tot_sum"])]['name_offered_by_opponent'].tolist()
         draw1= random.choices(population=best_response,k=1)
         best_response = draw1[0]
 
@@ -151,7 +144,6 @@ def perturbed_response4(AGENT_NO,data_to_look,name_len,prob_new_name):
     best_response3 = random.choices(population=[best_response,best_response2],weights=[1-prob_new_name,prob_new_name],k=1)[0]
 
     return best_response3
-
 
 
 
@@ -237,6 +229,11 @@ def network_simulations(iteration_name,
     norms_db_to_fill['timeperiod'] = ''
     
     
+    agents_in_edges = list(set([i[0] for i in potential_edges]+[i[1] for i in potential_edges]))
+    agents_in_network = list(range(num_agents))
+    delta_agents_hardcoded = [i for i in agents_in_network if i not in agents_in_edges]
+    
+    
     for timeperiod in range(1,num_of_trials+1):
         empty_df_to_fill_temp = empty_df_to_fill_trial[0:0]
         for v in range(num_of_rounds):
@@ -256,33 +253,33 @@ def network_simulations(iteration_name,
             elif function_to_use == 'perturbed_response2':
                 if len(empty_df_to_fill_temp) > len(empty_df_to_fill_trial):
 
-                    name_to_fill1 = perturbed_response1(AGENT_NO = agent1,data_to_look = empty_df_to_fill_temp,perturb_ratio=perturb_ratio,name_len=name_len,prob_new_name=prob_new_name)
-                    name_to_fill2 = perturbed_response1(AGENT_NO = agent2,data_to_look = empty_df_to_fill_temp,perturb_ratio=perturb_ratio,name_len=name_len,prob_new_name=prob_new_name)
+                    name_to_fill1 = perturbed_response2(AGENT_NO = agent1,data_to_look = empty_df_to_fill_temp,perturb_ratio=perturb_ratio,name_len=name_len,prob_new_name=prob_new_name)
+                    name_to_fill2 = perturbed_response2(AGENT_NO = agent2,data_to_look = empty_df_to_fill_temp,perturb_ratio=perturb_ratio,name_len=name_len,prob_new_name=prob_new_name)
                 else:
-                    name_to_fill1 = perturbed_response1(AGENT_NO = agent1,data_to_look = empty_df_to_fill_trial,perturb_ratio=perturb_ratio,name_len=name_len,prob_new_name=prob_new_name)
-                    name_to_fill2 = perturbed_response1(AGENT_NO = agent2,data_to_look = empty_df_to_fill_trial,perturb_ratio=perturb_ratio,name_len=name_len,prob_new_name=prob_new_name)
+                    name_to_fill1 = perturbed_response2(AGENT_NO = agent1,data_to_look = empty_df_to_fill_trial,perturb_ratio=perturb_ratio,name_len=name_len,prob_new_name=prob_new_name)
+                    name_to_fill2 = perturbed_response2(AGENT_NO = agent2,data_to_look = empty_df_to_fill_trial,perturb_ratio=perturb_ratio,name_len=name_len,prob_new_name=prob_new_name)
 
 
 
             elif function_to_use == 'perturbed_response3':
                 if len(empty_df_to_fill_temp) > len(empty_df_to_fill_trial):
 
-                    name_to_fill1 = perturbed_response1(AGENT_NO = agent1,data_to_look = empty_df_to_fill_temp,perturb_ratio=perturb_ratio,name_len=name_len,prob_new_name=prob_new_name)
-                    name_to_fill2 = perturbed_response1(AGENT_NO = agent2,data_to_look = empty_df_to_fill_temp,perturb_ratio=perturb_ratio,name_len=name_len,prob_new_name=prob_new_name)
+                    name_to_fill1 = perturbed_response3(AGENT_NO = agent1,data_to_look = empty_df_to_fill_temp,perturb_ratio=perturb_ratio,name_len=name_len,prob_new_name=prob_new_name)
+                    name_to_fill2 = perturbed_response3(AGENT_NO = agent2,data_to_look = empty_df_to_fill_temp,perturb_ratio=perturb_ratio,name_len=name_len,prob_new_name=prob_new_name)
                 else:
-                    name_to_fill1 = perturbed_response1(AGENT_NO = agent1,data_to_look = empty_df_to_fill_trial,perturb_ratio=perturb_ratio,name_len=name_len,prob_new_name=prob_new_name)
-                    name_to_fill2 = perturbed_response1(AGENT_NO = agent2,data_to_look = empty_df_to_fill_trial,perturb_ratio=perturb_ratio,name_len=name_len,prob_new_name=prob_new_name)
+                    name_to_fill1 = perturbed_response3(AGENT_NO = agent1,data_to_look = empty_df_to_fill_trial,perturb_ratio=perturb_ratio,name_len=name_len,prob_new_name=prob_new_name)
+                    name_to_fill2 = perturbed_response3(AGENT_NO = agent2,data_to_look = empty_df_to_fill_trial,perturb_ratio=perturb_ratio,name_len=name_len,prob_new_name=prob_new_name)
 
 
 
             elif function_to_use == 'perturbed_response4':
                 if len(empty_df_to_fill_temp) > len(empty_df_to_fill_trial):
 
-                    name_to_fill1 = perturbed_response1(AGENT_NO = agent1,data_to_look = empty_df_to_fill_temp,perturb_ratio=perturb_ratio,name_len=name_len,prob_new_name=prob_new_name)
-                    name_to_fill2 = perturbed_response1(AGENT_NO = agent2,data_to_look = empty_df_to_fill_temp,perturb_ratio=perturb_ratio,name_len=name_len,prob_new_name=prob_new_name)
+                    name_to_fill1 = perturbed_response4(AGENT_NO = agent1,data_to_look = empty_df_to_fill_temp,perturb_ratio=perturb_ratio,name_len=name_len,prob_new_name=prob_new_name)
+                    name_to_fill2 = perturbed_response4(AGENT_NO = agent2,data_to_look = empty_df_to_fill_temp,perturb_ratio=perturb_ratio,name_len=name_len,prob_new_name=prob_new_name)
                 else:
-                    name_to_fill1 = perturbed_response1(AGENT_NO = agent1,data_to_look = empty_df_to_fill_trial,perturb_ratio=perturb_ratio,name_len=name_len,prob_new_name=prob_new_name)
-                    name_to_fill2 = perturbed_response1(AGENT_NO = agent2,data_to_look = empty_df_to_fill_trial,perturb_ratio=perturb_ratio,name_len=name_len,prob_new_name=prob_new_name)
+                    name_to_fill1 = perturbed_response4(AGENT_NO = agent1,data_to_look = empty_df_to_fill_trial,perturb_ratio=perturb_ratio,name_len=name_len,prob_new_name=prob_new_name)
+                    name_to_fill2 = perturbed_response4(AGENT_NO = agent2,data_to_look = empty_df_to_fill_trial,perturb_ratio=perturb_ratio,name_len=name_len,prob_new_name=prob_new_name)
 
 
 
@@ -329,6 +326,56 @@ def network_simulations(iteration_name,
 
 
             empty_df_to_fill_temp = pd.concat([empty_df_to_fill_temp,data_to_append,data_to_append2],ignore_index=True,sort=False)
+            
+        if len(delta_agents_hardcoded) > 0:
+            for agent1 in delta_agents_hardcoded:
+                
+                if function_to_use == 'perturbed_response1':
+                    if len(empty_df_to_fill_temp) > len(empty_df_to_fill_trial):
+                        name_to_fill1 = perturbed_response1(AGENT_NO = agent1,data_to_look = empty_df_to_fill_temp,perturb_ratio=perturb_ratio,name_len=name_len,prob_new_name=prob_new_name)
+                    else:
+                        name_to_fill1 = perturbed_response1(AGENT_NO = agent1,data_to_look = empty_df_to_fill_trial,perturb_ratio=perturb_ratio,name_len=name_len,prob_new_name=prob_new_name)
+
+                elif function_to_use == 'perturbed_response2':
+                    if len(empty_df_to_fill_temp) > len(empty_df_to_fill_trial):
+                        name_to_fill1 = perturbed_response2(AGENT_NO = agent1,data_to_look = empty_df_to_fill_temp,perturb_ratio=perturb_ratio,name_len=name_len,prob_new_name=prob_new_name)
+                    else:
+                        name_to_fill1 = perturbed_response2(AGENT_NO = agent1,data_to_look = empty_df_to_fill_trial,perturb_ratio=perturb_ratio,name_len=name_len,prob_new_name=prob_new_name)
+
+                elif function_to_use == 'perturbed_response3':
+                    if len(empty_df_to_fill_temp) > len(empty_df_to_fill_trial):
+                        name_to_fill1 = perturbed_response3(AGENT_NO = agent1,data_to_look = empty_df_to_fill_temp,perturb_ratio=perturb_ratio,name_len=name_len,prob_new_name=prob_new_name)
+                    else:
+                        name_to_fill1 = perturbed_response3(AGENT_NO = agent1,data_to_look = empty_df_to_fill_trial,perturb_ratio=perturb_ratio,name_len=name_len,prob_new_name=prob_new_name)
+                
+                elif function_to_use == 'perturbed_response4':
+                    if len(empty_df_to_fill_temp) > len(empty_df_to_fill_trial):
+                        name_to_fill1 = perturbed_response4(AGENT_NO = agent1,data_to_look = empty_df_to_fill_temp,perturb_ratio=perturb_ratio,name_len=name_len,prob_new_name=prob_new_name)
+                    else:
+                        name_to_fill1 = perturbed_response4(AGENT_NO = agent1,data_to_look = empty_df_to_fill_trial,perturb_ratio=perturb_ratio,name_len=name_len,prob_new_name=prob_new_name)
+
+                if (agent1 in fixed_agents) and len(fixed_values_to_use) < len(fixed_agents):
+                    for jj in fixed_agents:
+                        if jj not in list(fixed_values_to_use.keys()):
+                            xx = empty_df_to_fill_temp.loc[empty_df_to_fill_temp["agent"]==jj].sort_values(["timeperiod"],ascending=True).head(1)
+                            if len(xx) > 0:
+                                fixed_values_to_use[xx["agent"].values[0]]=xx["name_offered"].values[0]
+                                
+                if agent1 in fixed_agents:
+                    try:
+                        name_offered = fixed_values_to_use[agent1]
+                    except:
+                        name_offered = name_to_fill1
+                else:
+                    name_offered = name_to_fill1
+                    
+                
+                data_to_append = pd.DataFrame({'agent':agent1,
+                                               'name_offered':name_offered,
+                                               'timeperiod':timeperiod
+                                               },index=[0])
+                
+                empty_df_to_fill_temp = pd.concat([empty_df_to_fill_temp,data_to_append],ignore_index=True,sort=False)
 
 
         empty_df_to_fill_trial = pd.concat([empty_df_to_fill_trial,empty_df_to_fill_temp],ignore_index=True,sort=False)
@@ -430,9 +477,19 @@ def network_simulations(iteration_name,
     data_for_trend_plot = data_for_trend_plot.reset_index(drop=True)
     for label,grp in data_for_trend_plot.groupby('name'):
         grp.plot(x='timeperiod',y='percent_count',ax=ax,label=label)
+    
+    
+    x_values11 = data_for_trend_plot['timeperiod'].unique()
+    total_periods11 = len(x_values11)
+    max_display_labels = 5  
+    interval11 = max(1, total_periods11 // max_display_labels)  
+
+    ax.set_xticks(np.arange(len(x_values11))[::interval11])
+    ax.set_xticklabels(x_values11[::interval11])
+
+
     ax.set_xlabel('Timeperiod')
     ax.set_ylabel('Count %')
-    # plt.show()
     plt.savefig(path_to_save_output+"top_names_"+iteration_name+"_"+today+".png")
     plt.clf()
     
@@ -478,3 +535,4 @@ def network_simulations(iteration_name,
 
 
     return(print("done"))
+
